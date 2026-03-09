@@ -7,20 +7,12 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div style="padding: 20px; font-family: Arial, sans-serif;">
+    <div style="padding: 20px;">
         <h1>📋 TimeBot</h1>
-        
-        <input type="text" id="taskName" placeholder="Название задачи" 
-               style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ccc; border-radius:8px; box-sizing:border-box;">
-        
-        <input type="date" id="taskDate" 
-               style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ccc; border-radius:8px; box-sizing:border-box;">
-        
-        <input type="time" id="taskTime" value="12:00" 
-               style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ccc; border-radius:8px; box-sizing:border-box;">
-        
-        <button onclick="addTask()" 
-                style="width:100%; padding:15px; background:#2481cc; color:white; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;">
+        <input type="text" id="taskName" placeholder="Название задачи" style="width:100%; padding:10px; margin-bottom:10px;">
+        <input type="date" id="taskDate" style="width:100%; padding:10px; margin-bottom:10px;">
+        <input type="time" id="taskTime" value="12:00" style="width:100%; padding:10px; margin-bottom:10px;">
+        <button onclick="addTask()" style="width:100%; padding:15px; background:#2481cc; color:white; border:none; border-radius:8px;">
             ➕ Добавить задачу
         </button>
     </div>
@@ -30,53 +22,51 @@
         let tg = Telegram.WebApp;
         tg.ready();
         tg.expand();
-        
+
         // Устанавливаем сегодняшнюю дату
         const today = new Date();
         document.getElementById('taskDate').value = today.toISOString().split('T')[0];
 
-        // Функция добавления задачи
-        function addTask() { 
+        function addTask() {
             const name = document.getElementById('taskName').value.trim();
-            const date = document.getElementById('taskDate').value; 
-            const time = document.getElementById('taskTime').value; 
-            
-            if (!name) { 
-                alert('Введите название задачи!'); 
-                return; 
+            const date = document.getElementById('taskDate').value;
+            const time = document.getElementById('taskTime').value;
+
+            if (!name) {
+                alert('Введите название задачи!');
+                return;
             }
-            
-            // Создаём объект задачи (без selectedPriority!)
-            const task = { 
-                id: Date.now(), 
-                name: name, 
-                date: date, 
-                time: time, 
-                priority: 'medium'  // ← просто значение, не переменная
-            }; 
-            
-            console.log("1. Создали задачу:", task); 
-            
+
+            // Создаём задачу с фиксированным приоритетом (medium)
+            const task = {
+                id: Date.now(),
+                name: name,
+                date: date,
+                time: time,
+                priority: 'medium'   // ← без переменной, просто строка
+            };
+
+            console.log("1. Создали задачу:", task);
+
             try {
-                // Отправляем данные боту
-                const dataToSend = JSON.stringify({ 
-                    action: 'add', 
-                    task: task 
-                }); 
-                
-                console.log("2. Отправляем данные:", dataToSend); 
-                tg.sendData(dataToSend); 
-                console.log("3. Данные отправлены!"); 
-                
-                // Сообщение об успехе
-                alert('✅ Задача отправлена боту! Напомню за 30 минут');
-                
-                // Очищаем поле ввода
-                document.getElementById('taskName').value = "";
-                
-            } catch (e) { 
-                console.error("❌ Ошибка:", e); 
-                alert("Ошибка: " + e.message); 
+                const dataToSend = JSON.stringify({
+                    action: 'add',
+                    task: task
+                });
+
+                console.log("2. Отправляем данные:", dataToSend);
+                tg.sendData(dataToSend);
+                console.log("3. Данные отправлены!");
+
+                // Простое сообщение об успехе
+                alert('✅ Задача отправлена боту! Напомню за 30 минут.');
+
+                // Очищаем поле
+                document.getElementById('taskName').value = '';
+
+            } catch (e) {
+                console.error("❌ Ошибка:", e);
+                alert("Ошибка: " + e);
             }
         }
     </script>
