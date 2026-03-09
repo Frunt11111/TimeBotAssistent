@@ -112,8 +112,10 @@ async def handle_webapp_data(message: Message):
     
     # Если это обычное сообщение
     else:
-        print(f"💬 Обычное сообщение: {message.text}")
-        
+        if message.text and not message.text.startswith('/'):
+            print(f"💬 Обычное сообщение: {message.text}")
+            await message.answer("Используй кнопку '🚀 Открыть приложение'")
+
 # ================== НАПОМИНАНИЯ ==================
 async def check_reminders():
     """Проверяет задачи и отправляет напоминания"""
