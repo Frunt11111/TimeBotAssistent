@@ -251,6 +251,7 @@
 
             if (!name) {
                 alert('Введите название задачи!');
+                document.getElementById('taskName').focus();
                 return;
             }
 
@@ -262,31 +263,23 @@
                 priority: selectedPriority
             };
 
-            console.log("📤 Отправляем задачу:", task);
-
             try {
-                // Отправляем данные боту
-                tg.sendData(JSON.stringify({
-                    action: 'add',
-                    task: task
-                }));
+                tg.sendData(JSON.stringify({ action: 'add', task: task }));
 
-                // Сохраняем в localStorage для отображения в списке
-                const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+                let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
                 tasks.push(task);
                 localStorage.setItem('tasks', JSON.stringify(tasks));
 
-                // Очищаем поле
                 document.getElementById('taskName').value = '';
-
-                // Обновляем список
+                document.getElementById('taskName').focus();
                 loadTasks();
 
                 alert('✅ Задача добавлена! Бот напомнит за 30 минут.');
-
+                tg.close(); // закрываем приложение (чтобы повторный вызов sendData работал)
             } catch (e) {
-                console.error('❌ Ошибка:', e);
+                console.error(e);
                 alert('Ошибка: ' + e.message);
+                document.getElementById('taskName').focus();
             }
         }
 
@@ -316,5 +309,3 @@
     </script>
 </body>
 </html>
-</html>
-
