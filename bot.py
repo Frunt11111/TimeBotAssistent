@@ -6,7 +6,7 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, W
 
 # ================== НАСТРОЙКИ ==================
 TOKEN = "8786657197:AAGcz1OLUZtEaLbPldGLsd64uL2U2Z6Ef6I"
-WEBAPP_URL = "https://твой-домен.com/index.html"  # ЗАМЕНИТЬ НА РЕАЛЬНЫЙ URL
+WEBAPP_URL = "https://frunt11111.github.io/TimeBotAssistent/"  # ЗАМЕНИТЬ НА РЕАЛЬНЫЙ URL
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,4 +34,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
     
