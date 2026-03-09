@@ -26,6 +26,7 @@
     </div>
 
     <script>
+        // Инициализация Telegram WebApp
         let tg = Telegram.WebApp;
         tg.ready();
         tg.expand();
@@ -34,6 +35,7 @@
         const today = new Date();
         document.getElementById('taskDate').value = today.toISOString().split('T')[0];
 
+        // Функция добавления задачи
         function addTask() { 
             const name = document.getElementById('taskName').value.trim();
             const date = document.getElementById('taskDate').value; 
@@ -44,18 +46,19 @@
                 return; 
             }
             
-            // Убираем selectedPriority - ставим фиксированное значение
+            // Создаём объект задачи (без selectedPriority!)
             const task = { 
                 id: Date.now(), 
                 name: name, 
                 date: date, 
                 time: time, 
-                priority: 'medium'  // ← ЖЁСТКО ПРОПИСАНО, без переменной
+                priority: 'medium'  // ← просто значение, не переменная
             }; 
             
             console.log("1. Создали задачу:", task); 
             
             try {
+                // Отправляем данные боту
                 const dataToSend = JSON.stringify({ 
                     action: 'add', 
                     task: task 
@@ -65,15 +68,15 @@
                 tg.sendData(dataToSend); 
                 console.log("3. Данные отправлены!"); 
                 
-                // Показываем сообщение об успехе
-                alert('✅ Задача отправлена боту!');
+                // Сообщение об успехе
+                alert('✅ Задача отправлена боту! Напомню за 30 минут');
                 
-                // Очищаем поле
+                // Очищаем поле ввода
                 document.getElementById('taskName').value = "";
                 
             } catch (e) { 
-                console.error("❌ Ошибка отправки:", e); 
-                alert("Ошибка: " + e); 
+                console.error("❌ Ошибка:", e); 
+                alert("Ошибка: " + e.message); 
             }
         }
     </script>
