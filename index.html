@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeBot Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 16px;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--tg-theme-text-color, #000000);
+        }
+        .card {
+            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .task-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 12px;
+        }
+        .date-time-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .date-input, .time-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color, #ccc);
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        .priority-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .priority-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .priority-btn.high {
+            background-color: #ff4d4d;
+            color: white;
+        }
+        .priority-btn.medium {
+            background-color: #ffa64d;
+            color: white;
+        }
+        .priority-btn.low {
+            background-color: #4caf50;
+            color: white;
+        }
+        .priority-btn.selected {
+            opacity: 0.7;
+            transform: scale(0.98);
+        }
+        .add-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .add-btn:active {
+            opacity: 0.7;
+        }
+        .task-list {
+            margin-top: 24px;
+        }
+        .task-item {
+            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task-info {
+            flex: 1;
+        }
+        .task-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .task-meta {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #666);
+        }
+        .task-priority {
+            width: 8px;
+            height: 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+        .priority-high { background-color: #ff4d4d; }
+        .priority-medium { background-color: #ffa64d; }
+        .priority-low { background-color: #4caf50; }
+        .delete-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--tg-theme-hint-color, #666);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 TimeBot Tasks</h1>
+        
+        <div class="card">
+            <input type="text" id="taskName" class="task-input" placeholder="Название задачи...">
+            
+            <div class="date-time-row">
+                <input type="date" id="taskDate" class="date-input" value="2025-03-10">
+                <input type="time" id="taskTime" class="time-input" value="15:00">
+            </div>
+            
+            <div class="priority-buttons">
+                <button class="priority-btn high" onclick="setPriority('high')">🔥 Высокий</button>
+                <button class="priority-btn medium" onclick="setPriority('medium')">⭐ Средний</button>
+                <button class="priority-btn low" onclick="setPriority('low')">✅ Низкий</button>
+            </div>
+            
+            <button class="add-btn" onclick="addTask()">➕ Добавить задачу</button>
+        </div>
+
+        <div class="task-list" id="taskList">
+            <!-- Список задач будет тут -->
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        let selectedPriority = 'medium';
+        
+        // Инициализация
+        tg.ready();
+        tg.expand();
+        
+        // Устанавливаем цвета темы
+        document.body.style.backgroundColor = tg.themeParams.bg_color || '#ffffff';
+        document.body.style.color = tg.themeParams.text_color || '#000000';
+        
+        // Установка сегодняшней даты
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('taskDate').value = `${yyyy}-${mm}-${dd}`;
+        
+        // Загружаем задачи
+        loadTasks();
+
+        function setPriority(priority) {
+            selectedPriority = priority;
+            
+            // Визуальное выделение
+            document.querySelectorAll('.priority-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+        }
+
+        function addTask() {
+            const name = document.getElementById('taskName').value.trim();
+            const date = document.getElementById('taskDate').value;
+            const time = document.getElementById('taskTime').value;
+            
+            if (!name) {
+                tg.showAlert('Введите название задачи!');
+                return;
+            }
+            
+            const task = {
+                id: Date.now(),
+                name: name,
+                date: date,
+                time: time,
+                priority: selectedPriority,
+                completed: false
+            };
+            
+            // Сохраняем в localStorage
+            let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            tasks.push(task);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            
+            // Очищаем поле
+            document.getElementById('taskName').value = '';
+            
+            // Обновляем список
+            loadTasks();
+            
+            // Вибрация (если поддерживается)
+            tg.HapticFeedback.notificationOccurred('success');
+            
+            // Можно отправить данные в бота
+            tg.sendData(JSON.stringify({
+                action: 'add',
+                task: task
+            }));
+        }
+
+        function loadTasks() {
+            const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            const taskList = document.getElementById('taskList');
+            
+            if (tasks.length === 0) {
+                taskList.innerHTML = '<p style="text-align: center; color: var(--tg-theme-hint-color);">Нет задач. Добавь первую!</p>';
+                return;
+            }
+            
+            let html = '<h2>📋 Мои задачи</h2>';
+            tasks.sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+            
+            tasks.forEach(task => {
+                if (!task.completed) {
+                    const priorityClass = task.priority === 'high' ? 'priority-high' : 
+                                         task.priority === 'medium' ? 'priority-medium' : 'priority-low';
+                    
+                    html += `
+                        <div class="task-item">
+                            <div style="display: flex; align-items: center; flex: 1;">
+                                <div class="task-priority ${priorityClass}"></div>
+                                <div class="task-info">
+                                    <div class="task-title">${task.name}</div>
+                                    <div class="task-meta">${task.date} ${task.time}</div>
+                                </div>
+                            </div>
+                            <button class="delete-btn" onclick="deleteTask(${task.id})">✕</button>
+                        </div>
+                    `;
+                }
+            });
+            
+            taskList.innerHTML = html;
+        }
+
+        function deleteTask(id) {
+            let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+            tasks = tasks.filter(t => t.id !== id);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            loadTasks();
+            tg.HapticFeedback.impactOccurred('light');
+            
+            tg.sendData(JSON.stringify({
+                action: 'delete',
+                taskId: id
+            }));
+        }
+    </script>
+</body>
+</html>
