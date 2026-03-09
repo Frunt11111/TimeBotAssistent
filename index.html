@@ -6,16 +6,22 @@
     <title>TimeBot</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-<body>
-    <div style="padding: 20px;">
-        <h1>📋 TimeBot</h1>
-        <input type="text" id="taskName" placeholder="Название задачи" style="width:100%; padding:10px; margin-bottom:10px;">
-        <input type="date" id="taskDate" style="width:100%; padding:10px; margin-bottom:10px;">
-        <input type="time" id="taskTime" value="12:00" style="width:100%; padding:10px; margin-bottom:10px;">
-        <button onclick="addTask()" style="width:100%; padding:15px; background:#2481cc; color:white; border:none; border-radius:8px;">
-            ➕ Добавить задачу
-        </button>
-    </div>
+<body style="font-family: Arial, sans-serif; padding: 20px;">
+    <h1>📋 TimeBot</h1>
+    
+    <input type="text" id="taskName" placeholder="Название задачи" 
+           style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ccc; border-radius:8px; box-sizing:border-box;">
+    
+    <input type="date" id="taskDate" 
+           style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ccc; border-radius:8px; box-sizing:border-box;">
+    
+    <input type="time" id="taskTime" value="12:00" 
+           style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ccc; border-radius:8px; box-sizing:border-box;">
+    
+    <button onclick="addTask()" 
+            style="width:100%; padding:15px; background:#2481cc; color:white; border:none; border-radius:8px; font-size:16px; cursor:pointer;">
+        ➕ Добавить задачу
+    </button>
 
     <script>
         // Инициализация Telegram WebApp
@@ -23,7 +29,7 @@
         tg.ready();
         tg.expand();
 
-        // Устанавливаем сегодняшнюю дату
+        // Устанавливаем сегодняшнюю дату в поле даты
         const today = new Date();
         document.getElementById('taskDate').value = today.toISOString().split('T')[0];
 
@@ -37,38 +43,35 @@
                 return;
             }
 
-            // Создаём задачу с фиксированным приоритетом (medium)
+            // Собираем данные задачи (без лишних полей)
             const task = {
-                id: Date.now(),
                 name: name,
                 date: date,
-                time: time,
-                priority: 'medium'   // ← без переменной, просто строка
+                time: time
             };
 
-            console.log("1. Создали задачу:", task);
+            console.log("📤 Отправляем задачу:", task);
 
             try {
-                const dataToSend = JSON.stringify({
+                // Отправляем данные боту
+                tg.sendData(JSON.stringify({
                     action: 'add',
                     task: task
-                });
+                }));
 
-                console.log("2. Отправляем данные:", dataToSend);
-                tg.sendData(dataToSend);
-                console.log("3. Данные отправлены!");
+                // Если дошли до сюда, значит отправка удалась
+                alert('✅ Задача отправлена боту!');
 
-                // Простое сообщение об успехе
-                alert('✅ Задача отправлена боту! Напомню за 30 минут.');
-
-                // Очищаем поле
+                // Очищаем поле названия
                 document.getElementById('taskName').value = '';
 
             } catch (e) {
-                console.error("❌ Ошибка:", e);
-                alert("Ошибка: " + e);
+                console.error('❌ Ошибка:', e);
+                alert('Ошибка: ' + e.message);
             }
         }
     </script>
 </body>
+</html>
+
 </html>
